@@ -119,6 +119,45 @@ async function bootstrap() {
       if (seededCount > 0) {
         console.log(`Successfully seeded ${seededCount} new categories!`);
       }
+      
+      // Seed popular RSS sources
+      const popularSources = [
+        { name: 'BBC World News', url: 'https://www.bbc.com', feedUrl: 'http://feeds.bbci.co.uk/news/world/rss.xml', type: 'RSS', cronExpression: '*/15 * * * *' },
+        { name: 'NYT World', url: 'https://www.nytimes.com', feedUrl: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', type: 'RSS', cronExpression: '*/15 * * * *' },
+        { name: 'TechCrunch Technology', url: 'https://techcrunch.com', feedUrl: 'https://techcrunch.com/feed/', type: 'RSS', cronExpression: '*/15 * * * *' },
+        { name: 'Wired Technology', url: 'https://www.wired.com', feedUrl: 'https://www.wired.com/feed/rss', type: 'RSS', cronExpression: '*/30 * * * *' },
+        { name: 'Politico Politics', url: 'https://www.politico.com', feedUrl: 'https://rss.politico.com/politics-news.xml', type: 'RSS', cronExpression: '*/15 * * * *' },
+        { name: 'CNBC Business', url: 'https://www.cnbc.com', feedUrl: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?id=10001147', type: 'RSS', cronExpression: '*/15 * * * *' },
+        { name: 'ScienceDaily', url: 'https://www.sciencedaily.com', feedUrl: 'https://www.sciencedaily.com/rss/all.xml', type: 'RSS', cronExpression: '*/30 * * * *' },
+        { name: 'ESPN Sports', url: 'https://www.espn.com', feedUrl: 'https://www.espn.com/espn/rss/news', type: 'RSS', cronExpression: '*/15 * * * *' },
+        { name: 'Billboard Entertainment', url: 'https://www.billboard.com', feedUrl: 'https://www.billboard.com/feed/', type: 'RSS', cronExpression: '*/30 * * * *' },
+        { name: 'Vogue Fashion', url: 'https://www.vogue.com', feedUrl: 'https://www.vogue.com/feed/rss', type: 'RSS', cronExpression: '*/30 * * * *' },
+        { name: 'Wall Street Journal', url: 'https://www.wsj.com', feedUrl: 'https://feeds.a.dj.com/rss/RSSWSJTopStories.xml', type: 'RSS', cronExpression: '*/15 * * * *' }
+      ];
+      
+      let seededSourcesCount = 0;
+      for (const src of popularSources) {
+        const exists = await prisma.source.findFirst({
+          where: { feedUrl: src.feedUrl },
+        });
+        if (!exists) {
+          await prisma.source.create({
+            data: {
+              organizationId: org.id,
+              name: src.name,
+              url: src.url,
+              feedUrl: src.feedUrl,
+              type: src.type as any,
+              cronExpression: src.cronExpression,
+              status: 'ACTIVE'
+            },
+          });
+          seededSourcesCount++;
+        }
+      }
+      if (seededSourcesCount > 0) {
+        console.log(`Successfully seeded ${seededSourcesCount} new sources!`);
+      }
     }
   } catch (err: any) {
     console.error(`Failed to auto-seed: ${err.message}`);
