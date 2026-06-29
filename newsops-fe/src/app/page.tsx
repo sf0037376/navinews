@@ -1,5 +1,5 @@
-import { API_BASE_URL } from '@/lib/api';
 'use client';
+import { API_BASE_URL } from '@/lib/api';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -36,7 +36,7 @@ export default function Home() {
   const loadArticles = async (currentLimit: number) => {
     setLoading(true);
     try {
-      let url = `${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/public/articles?limit=${currentLimit}`;
+      let url = `${API_BASE_URL}/api/v1/public/articles?limit=${currentLimit}`;
       if (searchQuery) {
         url += `&q=${encodeURIComponent(searchQuery)}`;
       }

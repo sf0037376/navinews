@@ -1,5 +1,5 @@
-import { API_BASE_URL } from '@/lib/api';
 'use client';
+import { API_BASE_URL } from '@/lib/api';
 
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from './admin-client-layout';
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
       const token = localStorage.getItem('admin_token');
       const authHeaders = { 'Authorization': `Bearer ${token}` };
 
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/sources/diagnostics', { headers: authHeaders });
+      const res = await fetch(`${API_BASE_URL}/api/v1/intelligence/sources/diagnostics`, { headers: authHeaders });
       if (res.ok) {
         const diag = await res.json();
         setMetrics(prev => ({
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
       }
 
       // Ingested Count
-      const rawRes = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/raw-items?limit=5', { headers: authHeaders });
+      const rawRes = await fetch(`${API_BASE_URL}/api/v1/intelligence/raw-items?limit=5`, { headers: authHeaders });
       if (rawRes.ok) {
         const rawData = await rawRes.json();
         setMetrics(prev => ({ ...prev, ingestedCount: rawData.pagination.total }));
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
       }
 
       // Audit logs
-      const auditRes = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/auth/audit/logs', { headers: authHeaders });
+      const auditRes = await fetch(`${API_BASE_URL}/auth/audit/logs`, { headers: authHeaders });
       if (auditRes.ok) {
         const auditData = await auditRes.json();
         setAuditLogs(auditData);
@@ -102,11 +102,11 @@ export default function AdminDashboard() {
       const token = localStorage.getItem('admin_token');
       const authHeaders = { 'Authorization': `Bearer ${token}` };
 
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/sources', { headers: authHeaders });
+      const res = await fetch(`${API_BASE_URL}/api/v1/intelligence/sources`, { headers: authHeaders });
       if (res.ok) {
         const sources = await res.json();
         for (const src of sources) {
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/sources/${src.id}/sync`, {
+          await fetch(`${API_BASE_URL}/api/v1/intelligence/sources/${src.id}/sync`, {
             method: 'POST',
             headers: authHeaders,
           });

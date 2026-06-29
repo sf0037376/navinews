@@ -1,5 +1,5 @@
-import { API_BASE_URL } from '@/lib/api';
 'use client';
+import { API_BASE_URL } from '@/lib/api';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -38,7 +38,7 @@ export default function ModeratorRegistration() {
     setSuccess('');
 
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/auth/register', {
+      const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

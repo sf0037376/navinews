@@ -1,5 +1,5 @@
-import { API_BASE_URL } from '@/lib/api';
 'use client';
+import { API_BASE_URL } from '@/lib/api';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -80,7 +80,7 @@ export default function ArticleEditorPage() {
         }
 
         // Fetch categories list
-        const catRes = await fetch(`${API_BASE_URL}/api/v1/editorial/categories', {
+        const catRes = await fetch(`${API_BASE_URL}/api/v1/editorial/categories`, {
           headers: authHeaders,
         });
         if (catRes.ok) {
@@ -139,7 +139,7 @@ export default function ArticleEditorPage() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/media/upload', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/media/upload`, {
         method: 'POST',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         body: formData,
@@ -224,7 +224,7 @@ ${currentText}`;
       let resultText = '';
       const token = localStorage.getItem('admin_token');
       try {
-        const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/ai-fallback', {
+        const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/ai-fallback`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -288,7 +288,7 @@ ${currentText}`;
     setGeneratingThumb(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/generate-ai-data', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/generate-ai-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

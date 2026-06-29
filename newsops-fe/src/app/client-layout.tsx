@@ -1,5 +1,5 @@
-import { API_BASE_URL } from '@/lib/api';
 'use client';
+import { API_BASE_URL } from '@/lib/api';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -64,7 +64,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   const login = async (email: string): Promise<boolean> => {
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/auth/login', {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
