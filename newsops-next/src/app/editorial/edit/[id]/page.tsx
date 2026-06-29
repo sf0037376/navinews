@@ -17,6 +17,7 @@ export default function ArticleEditorPage() {
 
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
+  const [content, setContent] = useState('');
   const [status, setStatus] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
@@ -68,6 +69,13 @@ export default function ArticleEditorPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Populate editor once loading finishes and editor is mounted
+  useEffect(() => {
+    if (!loading && editorRef.current) {
+      editorRef.current.innerHTML = content;
+    }
+  }, [loading]);
+
   // Fetch article details & categories list
   useEffect(() => {
     const fetchData = async () => {
@@ -105,9 +113,7 @@ export default function ArticleEditorPage() {
           } else {
             setSelectedCategoryIds(data.categoryId ? [data.categoryId] : []);
           }
-          if (editorRef.current) {
-            editorRef.current.innerHTML = data.content;
-          }
+          setContent(data.content || '');
         } else {
           throw new Error('Failed to load article');
         }
