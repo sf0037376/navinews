@@ -65,32 +65,51 @@ async function bootstrap() {
       console.log('Seeded default organization: Naveen Publications');
     }
 
-    // Seed default admin user (User model has no tenantId/role; use TenantUser join)
-    const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@navinews.com';
-    let adminUser = await prisma.user.findFirst({ where: { email: adminEmail, deletedAt: null } });
-    if (!adminUser) {
-      const password = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
-      const passwordHash = hashPassword(password);
-      adminUser = await prisma.user.create({
-        data: {
-          email: adminEmail,
-          passwordHash,
-          firstName: 'Admin',
-          lastName: 'User',
-          status: 'ACTIVE',
-        },
-      });
-      // Link user to tenant + organization via TenantUser join table
-      await prisma.tenantUser.create({
+    // Seed SystemAdmin Role
+    let adminRole = await prisma.role.findFirst({ where: { tenantId, name: 'SystemAdmin', deletedAt: null } });
+    if (!adminRole) {
+      adminRole = await prisma.role.create({
         data: {
           tenantId,
-          organizationId: org.id,
-          userId: adminUser.id,
-          status: 'ACTIVE',
+          name: 'SystemAdmin',
+          description: 'Super administrator with access to all actions',
         },
       });
-      console.log(`Seeded admin user: ${adminEmail} / ${password}`);
+      console.log('Seeded SystemAdmin role');
     }
+
+    // Helper to seed admins and assign roles
+    const seedAdmin = async (email: string, pass: string, firstName: string, lastName: string) => {
+      let adminUser = await prisma.user.findFirst({ where: { email, deletedAt: null } });
+      if (!adminUser) {
+        const passwordHash = hashPassword(pass);
+        adminUser = await prisma.user.create({
+          data: { email, passwordHash, firstName, lastName, status: 'ACTIVE' },
+        });
+        
+        await prisma.tenantUser.create({
+          data: { tenantId, organizationId: org.id, userId: adminUser.id, status: 'ACTIVE' },
+        });
+        console.log(`Seeded admin user: ${email} / ${pass}`);
+      }
+
+      // Ensure user has SystemAdmin role (crucial for users created before roles were added)
+      const hasRole = await prisma.userRole.findFirst({
+        where: { userId: adminUser.id, roleId: adminRole.id, organizationId: org.id }
+      });
+      if (!hasRole) {
+        await prisma.userRole.create({
+          data: { userId: adminUser.id, roleId: adminRole.id, organizationId: org.id },
+        });
+        console.log(`Assigned SystemAdmin role to: ${email}`);
+      }
+    };
+
+    const naviAdminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@navinews.com';
+    const naviAdminPass = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
+    await seedAdmin(naviAdminEmail, naviAdminPass, 'Admin', 'User');
+
+    await seedAdmin('admin@newsops.com', 'test123456', 'Super', 'Admin');
 
     if (tenantId) {
       const defaultCategories = [
