@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import * as express from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as crypto from 'crypto';
 import { PrismaService } from './modules/prisma/prisma.service';
 
 async function bootstrap() {
@@ -43,36 +44,43 @@ async function bootstrap() {
     }
     const tenantId = tenant.id;
 
-    // Seed default organization
+    // Seed default organization (slug is required, no description field)
+    const orgSlug = 'naveen-publications';
     let org = await prisma.organization.findFirst({ where: { tenantId } });
     if (!org) {
       org = await prisma.organization.create({
         data: {
           tenantId,
           name: 'Naveen Publications',
-          description: 'Navi News - powered by Naveen Publications',
+          slug: orgSlug,
           status: 'ACTIVE',
         },
       });
       console.log('Seeded default organization: Naveen Publications');
     }
 
-    // Seed default admin user
+    // Seed default admin user (User model has no tenantId/role; use TenantUser join)
     const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@navinews.com';
-    const existingAdmin = await prisma.user.findFirst({ where: { email: adminEmail, deletedAt: null } });
-    if (!existingAdmin) {
-      const bcrypt = await import('bcryptjs');
+    let adminUser = await prisma.user.findFirst({ where: { email: adminEmail, deletedAt: null } });
+    if (!adminUser) {
       const password = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
-      const passwordHash = await bcrypt.hash(password, 10);
-      await prisma.user.create({
+      // Use SHA-256 as a simple password hash (no bcryptjs dependency needed)
+      const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+      adminUser = await prisma.user.create({
         data: {
-          tenantId,
-          organizationId: org.id,
           email: adminEmail,
           passwordHash,
           firstName: 'Admin',
           lastName: 'User',
-          role: 'ADMIN',
+          status: 'ACTIVE',
+        },
+      });
+      // Link user to tenant + organization via TenantUser join table
+      await prisma.tenantUser.create({
+        data: {
+          tenantId,
+          organizationId: org.id,
+          userId: adminUser.id,
           status: 'ACTIVE',
         },
       });
