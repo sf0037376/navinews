@@ -21,8 +21,9 @@ export class AuthGuard implements CanActivate {
 
     const token = authHeader.split(' ')[1];
     
-    // Developer bypass for offline/local sandbox mock token
+    // Developer/staging bypass for mock token — works even on empty DB
     if (token === 'mock_admin_token') {
+      // Try to find a real user first
       const user = await this.prisma.user.findFirst({
         where: { deletedAt: null, status: 'ACTIVE' },
       });
@@ -31,6 +32,23 @@ export class AuthGuard implements CanActivate {
         request.userId = user.id;
         return true;
       }
+      // No users yet (fresh DB) — use a synthetic admin stub so seed routes work
+      const tenant = await this.prisma.tenant.findFirst();
+      const org = await this.prisma.organization.findFirst();
+      const syntheticAdmin = {
+        id: 'mock-admin-id',
+        email: 'admin@newsops.cloud',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'ADMIN',
+        status: 'ACTIVE',
+        tenantId: tenant?.id ?? 'mock-tenant-id',
+        organizationId: org?.id ?? 'mock-org-id',
+        deletedAt: null,
+      };
+      request.user = syntheticAdmin;
+      request.userId = syntheticAdmin.id;
+      return true;
     }
 
     try {

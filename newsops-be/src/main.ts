@@ -35,13 +35,50 @@ async function bootstrap() {
     if (!tenant) {
       tenant = await prisma.tenant.create({
         data: {
-          name: 'NewsOps Cloud',
-          subdomain: 'newsops',
+          name: 'Navi News',
+          subdomain: 'navinews',
           status: 'ACTIVE',
         },
       });
     }
     const tenantId = tenant.id;
+
+    // Seed default organization
+    let org = await prisma.organization.findFirst({ where: { tenantId } });
+    if (!org) {
+      org = await prisma.organization.create({
+        data: {
+          tenantId,
+          name: 'Naveen Publications',
+          description: 'Navi News - powered by Naveen Publications',
+          status: 'ACTIVE',
+        },
+      });
+      console.log('Seeded default organization: Naveen Publications');
+    }
+
+    // Seed default admin user
+    const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@navinews.com';
+    const existingAdmin = await prisma.user.findFirst({ where: { email: adminEmail, deletedAt: null } });
+    if (!existingAdmin) {
+      const bcrypt = await import('bcryptjs');
+      const password = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
+      const passwordHash = await bcrypt.hash(password, 10);
+      await prisma.user.create({
+        data: {
+          tenantId,
+          organizationId: org.id,
+          email: adminEmail,
+          passwordHash,
+          firstName: 'Admin',
+          lastName: 'User',
+          role: 'ADMIN',
+          status: 'ACTIVE',
+        },
+      });
+      console.log(`Seeded admin user: ${adminEmail} / ${password}`);
+    }
+
     if (tenantId) {
       const defaultCategories = [
         'Technology', 'Politics', 'Business', 'Science', 'Sports',
@@ -71,7 +108,7 @@ async function bootstrap() {
       }
     }
   } catch (err: any) {
-    console.error(`Failed to auto-seed categories: ${err.message}`);
+    console.error(`Failed to auto-seed: ${err.message}`);
   }
 
   const port = process.env.PORT || 3001;
