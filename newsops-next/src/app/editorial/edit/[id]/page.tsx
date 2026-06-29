@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/lib/api';
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -79,7 +80,7 @@ export default function ArticleEditorPage() {
         }
 
         // Fetch categories list
-        const catRes = await fetch('http://localhost:3001/api/v1/editorial/categories', {
+        const catRes = await fetch(`${API_BASE_URL}/api/v1/editorial/categories', {
           headers: authHeaders,
         });
         if (catRes.ok) {
@@ -88,7 +89,7 @@ export default function ArticleEditorPage() {
         }
 
         // Fetch article
-        const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}`, {
           headers: authHeaders,
         });
         if (res.ok) {
@@ -138,7 +139,7 @@ export default function ArticleEditorPage() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/media/upload', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/media/upload', {
         method: 'POST',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         body: formData,
@@ -146,7 +147,7 @@ export default function ArticleEditorPage() {
 
       if (res.ok) {
         const data = await res.json();
-        const url = data.imageUrl || `http://localhost:3001${data.url}`;
+        const url = data.imageUrl || `${API_BASE_URL}${data.url}`;
         execCmd('insertHTML', `<img src="${url}" alt="Uploaded image" class="my-4 rounded-xl max-w-full shadow border-2 border-primary/20 block" />`);
       } else {
         throw new Error('Upload error');
@@ -223,7 +224,7 @@ ${currentText}`;
       let resultText = '';
       const token = localStorage.getItem('admin_token');
       try {
-        const res = await fetch('http://localhost:3001/api/v1/editorial/articles/ai-fallback', {
+        const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/ai-fallback', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -287,7 +288,7 @@ ${currentText}`;
     setGeneratingThumb(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/articles/generate-ai-data', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/generate-ai-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -333,7 +334,7 @@ ${currentText}`;
 
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -365,7 +366,7 @@ ${currentText}`;
       throw new Error('Category selection is required before submitting/publishing.');
     }
     const htmlContent = editorRef.current?.innerHTML || '';
-    const saveRes = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}`, {
+    const saveRes = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -391,7 +392,7 @@ ${currentText}`;
       // Auto-save changes first to prevent stale database state errors
       await autoSaveBeforeStatus(token);
 
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -431,7 +432,7 @@ ${currentText}`;
       // Auto-save changes first to prevent stale database state errors
       await autoSaveBeforeStatus(token);
 
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -459,7 +460,7 @@ ${currentText}`;
     }
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -485,7 +486,7 @@ ${currentText}`;
     }
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -511,7 +512,7 @@ ${currentText}`;
     }
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}`, {
         method: 'DELETE',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -533,7 +534,7 @@ ${currentText}`;
     setVerifying(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}/verify-authenticity`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/editorial/articles/${id}/verify-authenticity`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

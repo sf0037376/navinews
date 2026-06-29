@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/lib/api';
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -69,7 +70,7 @@ export default function EditorialWorkflows() {
     setImportingUrl(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/articles/import-url', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/import-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +160,7 @@ export default function EditorialWorkflows() {
     setGeneratingThumb(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/articles/generate-ai-data', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/generate-ai-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -204,7 +205,7 @@ export default function EditorialWorkflows() {
     setGeneratingAiData(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/articles/generate-ai-data', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/generate-ai-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -249,7 +250,7 @@ export default function EditorialWorkflows() {
     setLoading(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const artRes = await fetch('http://localhost:3001/api/v1/editorial/articles', {
+      const artRes = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles', {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       if (artRes.ok) {
@@ -257,7 +258,7 @@ export default function EditorialWorkflows() {
         setArticles(artData);
       }
 
-      const clusterRes = await fetch('http://localhost:3001/api/v1/intelligence/clusters', {
+      const clusterRes = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/clusters', {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       if (clusterRes.ok) {
@@ -265,7 +266,7 @@ export default function EditorialWorkflows() {
         setClusters(clData.data);
       }
 
-      const catRes = await fetch('http://localhost:3001/api/v1/editorial/categories', {
+      const catRes = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/categories', {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       if (catRes.ok) {
@@ -324,7 +325,7 @@ export default function EditorialWorkflows() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/articles', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -368,7 +369,7 @@ export default function EditorialWorkflows() {
   const handleSubmitForReview = async (id: string) => {
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -394,7 +395,7 @@ export default function EditorialWorkflows() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -421,7 +422,7 @@ export default function EditorialWorkflows() {
     setGeneratingId(clusterId);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/articles/generate-from-cluster', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/generate-from-cluster', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -475,7 +476,7 @@ export default function EditorialWorkflows() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/media/upload', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/media/upload', {
         method: 'POST',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         body: formData,
@@ -484,7 +485,7 @@ export default function EditorialWorkflows() {
       if (res.ok) {
         const data = await res.json();
         // Insert image element into WYSIWYG
-        const url = data.imageUrl || `http://localhost:3001${data.url}`;
+        const url = data.imageUrl || `${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}${data.url}`;
         execCmd('insertHTML', `<img src="${url}" alt="Uploaded image" class="my-4 rounded-xl max-w-full shadow border-2 border-primary/20 block" />`);
       } else {
         throw new Error('Upload error');
@@ -510,7 +511,7 @@ export default function EditorialWorkflows() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${editingArticle.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/${editingArticle.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -550,7 +551,7 @@ export default function EditorialWorkflows() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/editorial/articles/${showTranslateModal.id}/translate`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/${showTranslateModal.id}/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

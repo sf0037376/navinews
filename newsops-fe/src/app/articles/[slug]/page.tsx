@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/lib/api';
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -179,7 +180,7 @@ export default function ArticleDetail() {
   const loadContent = async (targetSlug: string, langCode: string) => {
     setLoading(true);
     try {
-      const articleRes = await fetch(`http://localhost:3001/api/v1/public/articles/${targetSlug}`);
+      const articleRes = await fetch(`${API_BASE_URL}/api/v1/public/articles/${targetSlug}`);
       if (articleRes.ok) {
         const artData = await articleRes.json();
         setArticle(artData);
@@ -187,7 +188,7 @@ export default function ArticleDetail() {
         setActiveLang(langCode);
 
         // Fetch comments
-        const commentsRes = await fetch(`http://localhost:3001/api/v1/public/articles/${artData.id}/comments`);
+        const commentsRes = await fetch(`${API_BASE_URL}/api/v1/public/articles/${artData.id}/comments`);
         if (commentsRes.ok) {
           const commData = await commentsRes.json();
           setComments(commData);
@@ -294,7 +295,7 @@ export default function ArticleDetail() {
 
     try {
       const token = localStorage.getItem('newsops_token');
-      const res = await fetch(`http://localhost:3001/api/v1/public/articles/${article?.id}/comments`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/public/articles/${article?.id}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/lib/api';
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -43,7 +44,7 @@ export default function IngestionSources() {
 
   const fetchSources = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/v1/intelligence/sources');
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/sources');
       if (res.ok) {
         const data = await res.json();
         setSources(data);
@@ -62,7 +63,7 @@ export default function IngestionSources() {
   const fetchRawItems = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/v1/intelligence/raw-items?limit=10');
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/raw-items?limit=10');
       if (res.ok) {
         const payload = await res.json();
         setRawItems(payload.data || []);
@@ -93,7 +94,7 @@ export default function IngestionSources() {
     }
 
     try {
-      const res = await fetch('http://localhost:3001/api/v1/intelligence/sources', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/sources', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, url, feedUrl, cronExpression }),
@@ -133,7 +134,7 @@ export default function IngestionSources() {
     setSyncingId(id);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:3001/api/v1/intelligence/sources/${id}/sync`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/sources/${id}/sync`, {
         method: 'POST',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
@@ -172,7 +173,7 @@ export default function IngestionSources() {
     setProcessingId(selectedItem.id);
     try {
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/editorial/articles/generate-from-raw', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/editorial/articles/generate-from-raw', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/lib/api';
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -26,7 +27,7 @@ export default function Organizations() {
     setLoading(true);
     // Since organization routing might be offline, we populate initial list and try fetch
     try {
-      const res = await fetch('http://localhost:3001/api/v1/intelligence/sources'); // Check backend
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/intelligence/sources'); // Check backend
       if (res.ok) {
         // Mock active list matching seeded values
         setOrgs([

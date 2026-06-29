@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@/lib/api';
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -30,7 +31,7 @@ export default function Settings() {
     try {
       // Try to fetch organization settings from DB if token is present
       const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:3001/api/v1/organizations', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/organizations', {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       if (res.ok) {
@@ -59,14 +60,14 @@ export default function Settings() {
 
       // Call organizations update on backend if logged in
       const token = localStorage.getItem('admin_token');
-      const orgRes = await fetch('http://localhost:3001/api/v1/organizations', {
+      const orgRes = await fetch('${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/organizations', {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       if (orgRes.ok) {
         const orgs = await orgRes.json();
         if (orgs.length > 0) {
           // Update slackWebhookUrl for first organization
-          await fetch(`http://localhost:3001/api/v1/organizations/${orgs[0].id}`, {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${API_BASE_URL}`}/api/v1/organizations/${orgs[0].id}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
