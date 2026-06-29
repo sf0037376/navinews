@@ -1,0 +1,596 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum SourceType {
+  RSS
+  ATOM
+  SCRAPER
+  API
+}
+
+enum SourceStatus {
+  ACTIVE
+  INACTIVE
+  RATE_LIMITED
+  FAILED
+}
+
+enum CrawlStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum EntityType {
+  PERSON
+  ORGANIZATION
+  LOCATION
+  PRODUCT
+  EVENT
+  OTHER
+}
+
+enum VeracityStatus {
+  VERIFIED
+  REFUTED
+  UNVERIFIED
+  CONTRADICTORY
+}
+
+// --------------------------------------------------
+// Identity & Organization Module
+// --------------------------------------------------
+
+model Tenant {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String         @db.VarChar(150)
+  subdomain   String         @db.VarChar(100)
+  status      String         @default("ACTIVE") @db.VarChar(50)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?      @map("deleted_at") @db.Timestamptz(6)
+  createdBy   String?        @map("created_by") @db.Uuid
+  updatedBy   String?        @map("updated_by") @db.Uuid
+
+  organizations Organization[]
+  roles         Role[]
+  tenantUsers   TenantUser[]
+
+  @@unique([subdomain, deletedAt])
+  @@map("tenants")
+}
+
+model Organization {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  name        String         @db.VarChar(150)
+  slug        String         @db.VarChar(100)
+  status      String         @default("ACTIVE") @db.VarChar(50)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?      @map("deleted_at") @db.Timestamptz(6)
+  createdBy   String?        @map("created_by") @db.Uuid
+  updatedBy   String?        @map("updated_by") @db.Uuid
+  slackWebhookUrl String?    @map("slack_webhook_url") @db.VarChar(2048)
+
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantUsers TenantUser[]
+  userRoles   UserRole[]
+
+  @@unique([tenantId, slug, deletedAt])
+  @@index([tenantId])
+  @@map("organizations")
+}
+
+model User {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String       @db.VarChar(255)
+  passwordHash String       @map("password_hash") @db.VarChar(255)
+  firstName    String       @map("first_name") @db.VarChar(100)
+  lastName     String       @map("last_name") @db.VarChar(100)
+  status       String       @default("ACTIVE") @db.VarChar(50)
+  phone        String?      @db.VarChar(50)
+  address      String?      @db.Text
+  aadhaarNo    String?      @map("aadhaar_no") @db.VarChar(50)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?    @map("deleted_at") @db.Timestamptz(6)
+  createdBy    String?      @map("created_by") @db.Uuid
+  updatedBy    String?      @map("updated_by") @db.Uuid
+
+  tenantUsers  TenantUser[]
+  userRoles    UserRole[]
+
+  @@unique([email, deletedAt])
+  @@map("users")
+}
+
+model Permission {
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String           @db.VarChar(100)
+  actionNode  String           @map("action_node") @db.VarChar(100)
+  description String?          @db.VarChar(255)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?        @map("deleted_at") @db.Timestamptz(6)
+  createdBy   String?          @map("created_by") @db.Uuid
+  updatedBy   String?          @map("updated_by") @db.Uuid
+
+  rolePermissions RolePermission[]
+
+  @@unique([actionNode, deletedAt])
+  @@map("permissions")
+}
+
+model Role {
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String           @map("tenant_id") @db.Uuid
+  name        String           @db.VarChar(100)
+  description String?          @db.VarChar(255)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?        @map("deleted_at") @db.Timestamptz(6)
+  createdBy   String?          @map("created_by") @db.Uuid
+  updatedBy   String?          @map("updated_by") @db.Uuid
+
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rolePermissions RolePermission[]
+  userRoles   UserRole[]
+
+  @@unique([tenantId, name, deletedAt])
+  @@index([tenantId])
+  @@map("roles")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id") @db.Uuid
+  permissionId String     @map("permission_id") @db.Uuid
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model TenantUser {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String        @map("tenant_id") @db.Uuid
+  organizationId String?       @map("organization_id") @db.Uuid
+  userId         String        @map("user_id") @db.Uuid
+  customTitle    String?       @map("custom_title") @db.VarChar(150)
+  status         String        @default("ACTIVE") @db.VarChar(50)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?     @map("deleted_at") @db.Timestamptz(6)
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, organizationId, userId, deletedAt])
+  @@index([tenantId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("tenant_users")
+}
+
+model UserRole {
+  userId         String        @map("user_id") @db.Uuid
+  roleId         String        @map("role_id") @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId, organizationId])
+  @@index([userId])
+  @@index([roleId])
+  @@index([organizationId])
+  @@map("user_roles")
+}
+
+// --------------------------------------------------
+// Editorial & CMS Module
+// --------------------------------------------------
+
+model Category {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  parentId    String?        @map("parent_id") @db.Uuid
+  name        String         @db.VarChar(100)
+  slug        String         @db.VarChar(100)
+  description String?        @db.VarChar(255)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?      @map("deleted_at") @db.Timestamptz(6)
+  createdBy   String?        @map("created_by") @db.Uuid
+  updatedBy   String?        @map("updated_by") @db.Uuid
+
+  parent      Category?      @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[]     @relation("CategoryHierarchy")
+  articles    Article[]
+  articleCategories ArticleCategory[]
+
+  @@unique([tenantId, slug, deletedAt])
+  @@index([tenantId])
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Tag {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String       @map("tenant_id") @db.Uuid
+  name      String       @db.VarChar(100)
+  slug      String       @db.VarChar(100)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?    @map("deleted_at") @db.Timestamptz(6)
+  createdBy String?      @map("created_by") @db.Uuid
+  updatedBy String?      @map("updated_by") @db.Uuid
+
+  articles  ArticleTag[]
+
+  @@unique([tenantId, slug, deletedAt])
+  @@index([tenantId])
+  @@map("tags")
+}
+
+model MediaAsset {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  filename    String         @db.VarChar(255)
+  storageKey  String         @map("storage_key") @db.VarChar(255)
+  mimeType    String         @map("mime_type") @db.VarChar(100)
+  fileSize    Int            @map("file_size")
+  altText     String?        @map("alt_text") @db.VarChar(255)
+  focalPointX Float?         @map("focal_point_x")
+  focalPointY Float?         @map("focal_point_y")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?      @map("deleted_at") @db.Timestamptz(6)
+  createdBy   String?        @map("created_by") @db.Uuid
+  updatedBy   String?        @map("updated_by") @db.Uuid
+
+  articles    ArticleMedia[]
+
+  @@index([tenantId])
+  @@map("media_assets")
+}
+
+model Article {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String            @map("tenant_id") @db.Uuid
+  organizationId String            @map("organization_id") @db.Uuid
+  categoryId     String?           @map("category_id") @db.Uuid
+  title          String            @db.VarChar(255)
+  slug           String            @db.VarChar(255)
+  summary        String?           @db.Text
+  content        String            @db.Text
+  status         String            @default("DRAFT") @db.VarChar(50)
+  versionNumber  Int               @default(1) @map("version_number")
+  viewCount      Int               @default(0) @map("version_count")
+  publishedAt    DateTime?         @map("published_at") @db.Timestamptz(6)
+  scheduledAt    DateTime?         @map("scheduled_at") @db.Timestamptz(6)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?         @map("deleted_at") @db.Timestamptz(6)
+  createdBy      String?           @map("created_by") @db.Uuid
+  updatedBy      String?           @map("updated_by") @db.Uuid
+  aiVeracityStatus String            @default("UNVERIFIED") @map("ai_veracity_status") @db.VarChar(50)
+  aiExplanation    String?           @map("ai_explanation") @db.Text
+
+  category       Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  revisions      ArticleRevision[]
+  tags           ArticleTag[]
+  media          ArticleMedia[]
+  comments       Comment[]
+  articleCategories ArticleCategory[]
+
+  @@unique([tenantId, slug, deletedAt])
+  @@index([tenantId])
+  @@index([organizationId])
+  @@index([categoryId])
+  @@index([status, publishedAt(sort: Desc)])
+  @@map("articles")
+}
+
+model ArticleCategory {
+  articleId  String   @map("article_id") @db.Uuid
+  categoryId String   @map("category_id") @db.Uuid
+
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, categoryId])
+  @@index([categoryId])
+  @@map("article_categories")
+}
+
+model ArticleRevision {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  articleId     String   @map("article_id") @db.Uuid
+  versionNumber Int      @map("version_number")
+  title         String   @db.VarChar(255)
+  summary       String?  @db.Text
+  content       String   @db.Text
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  createdBy     String?  @map("created_by") @db.Uuid
+
+  article       Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, versionNumber])
+  @@index([articleId])
+  @@map("article_revisions")
+}
+
+model ArticleTag {
+  articleId String  @map("article_id") @db.Uuid
+  tagId     String  @map("tag_id") @db.Uuid
+
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@index([tagId])
+  @@map("article_tags")
+}
+
+model ArticleMedia {
+  articleId     String     @map("article_id") @db.Uuid
+  mediaAssetId  String     @map("media_asset_id") @db.Uuid
+  placementType String     @default("BODY_INLINE") @map("placement_type") @db.VarChar(50)
+  displayOrder  Int        @default(0) @map("display_order")
+
+  article       Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  mediaAsset    MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, mediaAssetId, placementType])
+  @@index([mediaAssetId])
+  @@map("article_media")
+}
+
+model Comment {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  articleId        String    @map("article_id") @db.Uuid
+  parentId         String?   @map("parent_id") @db.Uuid
+  authorName       String?   @map("author_name") @db.VarChar(100)
+  authorEmail      String?   @map("author_email") @db.VarChar(255)
+  userId           String?   @map("user_id") @db.Uuid
+  content          String    @db.Text
+  moderationStatus String    @default("PENDING") @map("moderation_status") @db.VarChar(50)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  article          Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  parent           Comment?  @relation("CommentHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  replies          Comment[] @relation("CommentHierarchy")
+
+  @@index([tenantId])
+  @@index([parentId])
+  @@index([articleId, moderationStatus])
+  @@map("comments")
+}
+
+model KnowledgeGraphNode {
+  id          String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String               @map("tenant_id") @db.Uuid
+  name        String               @db.VarChar(150)
+  type        String               @db.VarChar(50)
+  description String?              @db.Text
+  createdAt   DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?            @map("deleted_at") @db.Timestamptz(6)
+
+  incomingEdges KnowledgeGraphEdge[] @relation("TargetNode")
+  outgoingEdges KnowledgeGraphEdge[] @relation("SourceNode")
+
+  @@unique([tenantId, name, type, deletedAt])
+  @@index([tenantId])
+  @@map("knowledge_graph_nodes")
+}
+
+model KnowledgeGraphEdge {
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String             @map("tenant_id") @db.Uuid
+  sourceNodeId String             @map("source_node_id") @db.Uuid
+  targetNodeId String             @map("target_node_id") @db.Uuid
+  relationType String             @map("relation_type") @db.VarChar(100)
+  weight       Float              @default(1.00)
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?          @map("deleted_at") @db.Timestamptz(6)
+
+  sourceNode   KnowledgeGraphNode @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode   KnowledgeGraphNode @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sourceNodeId, targetNodeId, relationType, deletedAt])
+  @@index([tenantId])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+  @@map("knowledge_graph_edges")
+}
+
+// --------------------------------------------------
+// News Intelligence Module
+// --------------------------------------------------
+
+model Source {
+  id             String        @id @default(dbgenerated("concat('src_', replace(gen_random_uuid()::text, '-', ''))")) @db.VarChar(50)
+  organizationId String        @map("organization_id") @db.VarChar(50)
+  name           String        @db.VarChar(255)
+  url            String        @db.VarChar(2048)
+  feedUrl        String        @unique @map("feed_url") @db.VarChar(2048)
+  type           SourceType    @default(RSS)
+  status         SourceStatus  @default(ACTIVE)
+  cronExpression String        @map("cron_expression") @db.VarChar(50)
+  etag           String?       @db.VarChar(255)
+  lastModified   String?       @map("last_modified") @db.VarChar(255)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  crawls        Crawl[]
+  sourceMetrics SourceMetric[]
+  rawFeedItems  RawFeedItem[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("sources")
+}
+
+model Crawl {
+  id           String      @id @default(dbgenerated("concat('crl_', replace(gen_random_uuid()::text, '-', ''))")) @db.VarChar(50)
+  sourceId     String      @map("source_id") @db.VarChar(50)
+  status       CrawlStatus @default(PENDING)
+  startedAt    DateTime    @default(now()) @map("started_at")
+  finishedAt   DateTime?   @map("finished_at")
+  itemsFound   Int         @default(0) @map("items_found")
+  itemsSaved   Int         @default(0) @map("items_saved")
+  errorMessage String?     @map("error_message") @db.Text
+  rawLog       String?     @map("raw_log") @db.Text
+
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("crawls")
+}
+
+model RawFeedItem {
+  id              String       @id @default(dbgenerated("concat('itm_', replace(gen_random_uuid()::text, '-', ''))")) @db.VarChar(50)
+  sourceId        String       @map("source_id") @db.VarChar(50)
+  crawlId         String       @map("crawl_id") @db.VarChar(50)
+  title           String       @db.VarChar(512)
+  description     String?      @db.Text
+  content         String       @db.Text
+  url             String       @map("url") @db.VarChar(2048)
+  author          String?      @db.VarChar(255)
+  publishedAt     DateTime     @map("published_at")
+  ingestedAt      DateTime     @default(now()) @map("ingested_at")
+  nlpProcessedAt  DateTime?    @map("nlp_processed_at")
+  fingerprintHash String       @unique @map("fingerprint_hash") @db.VarChar(64)
+  language        String       @default("en") @db.VarChar(10)
+  sentimentScore  Decimal?     @map("sentiment_score") @db.Decimal(5, 2)
+
+  source      Source            @relation(fields: [sourceId], references: [id])
+  entities    ExtractedEntity[]
+  facts       VerifiedFact[]
+  clusters    ClusterArticle[]
+
+  @@index([sourceId])
+  @@index([publishedAt])
+  @@index([nlpProcessedAt])
+  @@map("raw_feed_items")
+}
+
+model Cluster {
+  id                   String           @id @default(dbgenerated("concat('cls_', replace(gen_random_uuid()::text, '-', ''))")) @db.VarChar(50)
+  title                String           @db.VarChar(255)
+  summary              String           @db.Text
+  representativeEntity String?          @map("representative_entity") @db.VarChar(255)
+  category             String           @db.VarChar(100)
+  status               String           @default("DRAFT") @db.VarChar(50)
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+  deletedAt            DateTime?        @map("deleted_at")
+
+  articles ClusterArticle[]
+
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
+  @@map("clusters")
+}
+
+model ClusterArticle {
+  clusterId        String   @map("cluster_id") @db.VarChar(50)
+  rawFeedItemId    String   @map("raw_feed_item_id") @db.VarChar(50)
+  relevanceScore   Decimal  @map("relevance_score") @db.Decimal(5, 4)
+  isRepresentative Boolean  @default(false) @map("is_representative")
+  addedAt          DateTime @default(now()) @map("added_at")
+
+  cluster     Cluster     @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  rawFeedItem RawFeedItem @relation(fields: [rawFeedItemId], references: [id], onDelete: Cascade)
+
+  @@id([clusterId, rawFeedItemId])
+  @@index([rawFeedItemId])
+  @@map("cluster_articles")
+}
+
+model ExtractedEntity {
+  id              String     @id @default(dbgenerated("concat('ent_', replace(gen_random_uuid()::text, '-', ''))")) @db.VarChar(50)
+  rawFeedItemId   String     @map("raw_feed_item_id") @db.VarChar(50)
+  name            String     @db.VarChar(255)
+  type            EntityType @default(OTHER)
+  confidenceScore Decimal    @map("confidence_score") @db.Decimal(5, 4)
+  mentionCount    Int        @default(1) @map("mention_count")
+  metadata        Json?      @map("metadata")
+
+  rawFeedItem RawFeedItem @relation(fields: [rawFeedItemId], references: [id], onDelete: Cascade)
+
+  @@index([rawFeedItemId])
+  @@index([name])
+  @@index([type])
+  @@map("extracted_entities")
+}
+
+model VerifiedFact {
+  id                 String         @id @default(dbgenerated("concat('fct_', replace(gen_random_uuid()::text, '-', ''))")) @db.VarChar(50)
+  rawFeedItemId      String         @map("raw_feed_item_id") @db.VarChar(50)
+  claim              String         @db.VarChar(1024)
+  explanation        String         @db.Text
+  status             VeracityStatus @default(UNVERIFIED)
+  verifier           String         @db.VarChar(255)
+  confidenceScore    Decimal        @map("confidence_score") @db.Decimal(5, 4)
+  verificationSource String?        @map("verification_source") @db.VarChar(2048)
+  verifiedAt         DateTime       @default(now()) @map("verified_at")
+
+  rawFeedItem RawFeedItem @relation(fields: [rawFeedItemId], references: [id], onDelete: Cascade)
+
+  @@index([rawFeedItemId])
+  @@index([status])
+  @@map("verified_facts")
+}
+
+model SourceMetric {
+  id               String   @id @default(dbgenerated("concat('mtr_', replace(gen_random_uuid()::text, '-', ''))")) @db.VarChar(50)
+  sourceId         String   @map("source_id") @db.VarChar(50)
+  timestamp        DateTime @default(now())
+  uptimeRatio      Decimal  @map("uptime_ratio") @db.Decimal(5, 4)
+  averageLatencyMs Int      @map("average_latency_ms")
+  errorRate        Decimal  @map("error_rate") @db.Decimal(5, 4)
+  articleCount     Int      @map("article_count")
+
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId, timestamp])
+  @@map("source_metrics")
+}
+
+model AuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  userEmail String?  @map("user_email") @db.VarChar(255)
+  action    String   @db.VarChar(100)
+  details   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

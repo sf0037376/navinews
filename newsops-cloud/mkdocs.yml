@@ -1,0 +1,246 @@
+site_name: NewsOps Cloud Software Design Repository
+site_description: Enterprise-grade Software Design Repository for NewsOps Cloud - An AI-powered Digital Publishing Operating System
+site_author: Naveen Publications
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: slate
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: slate
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Welcome: README.md
+  - 01 Business:
+      - Directory Overview: 01-business/index.md
+      - Executive Summary: 01-business/executive_summary.md
+      - Market Analysis: 01-business/market_analysis.md
+      - Monetization Strategy: 01-business/monetization_strategy.md
+      - Legal & Compliance: 01-business/legal_and_compliance.md
+      - Service Level Agreements: 01-business/service_level_agreements.md
+      - Tenant Tiering Model: 01-business/tenant_tiering_model.md
+      - Cost Estimation Model: 01-business/cost_estimation_model.md
+      - Marketing & Acquisition: 01-business/marketing_and_acquisition.md
+      - Operational Playbooks: 01-business/operational_playbooks.md
+      - OKR Framework: 01-business/okr_framework.md
+      - Customer Personas: 01-business/customer_personas.md
+      - Partnership Ecosystem: 01-business/partnership_ecosystem.md
+      - Risk Management: 01-business/risk_management.md
+  - 02 Architecture:
+      - Directory Overview: 02-architecture/index.md
+      - System Architecture: 02-architecture/system_architecture.md
+      - Design Patterns: 02-architecture/design_patterns.md
+      - Event Driven Design: 02-architecture/event_driven_design.md
+      - Multi-Tenancy Architecture: 02-architecture/multi_tenancy_architecture.md
+      - Caching Strategy: 02-architecture/caching_strategy.md
+      - Storage Architecture: 02-architecture/storage_architecture.md
+      - Scaling & HA: 02-architecture/scaling_and_ha.md
+      - Disaster Recovery: 02-architecture/disaster_recovery.md
+      - Domain Driven Design: 02-architecture/domain_driven_design.md
+      - Integration Patterns: 02-architecture/integration_patterns.md
+      - Performance Budget: 02-architecture/performance_budget.md
+      - Zero Cost MVP Architecture: 02-architecture/zero_cost_mvp_architecture.md
+      - Future Proofing Plan: 02-architecture/future_proofing_plan.md
+  - 03 Database:
+      - Directory Overview: 03-database/index.md
+      - Schema Design Standards: 03-database/schema_design_standards.md
+      - Tenant Isolation Database: 03-database/tenant_isolation_database.md
+      - Identity & Org Schema: 03-database/identity_and_org_schema.md
+      - Editorial & CMS Schema: 03-database/editorial_and_cms_schema.md
+      - News Intelligence Schema: 03-database/news_intelligence_schema.md
+      - Social Publishing Schema: 03-database/social_publishing_schema.md
+      - Billing & Subscriptions Schema: 03-database/billing_and_subscriptions_schema.md
+      - Audit & History Schema: 03-database/audit_and_history_schema.md
+      - Indexes & Partitioning: 03-database/indexes_and_partitioning.md
+      - Migration Strategy: 03-database/migration_strategy.md
+      - Backup & Retention: 03-database/backup_and_retention.md
+      - Unified ERD: 03-database/unified_erd.md
+  - 04 AI Orchestrator:
+      - Directory Overview: 04-ai/index.md
+      - AI Orchestration Architecture: 04-ai/ai_orchestration_architecture.md
+      - Prompt Engineering Standards: 04-ai/prompt_engineering_standards.md
+      - Cost & Latency Routing: 04-ai/cost_latency_routing.md
+      - BYO AI Model: 04-ai/byo_ai_model.md
+      - Local Model Integration: 04-ai/local_model_integration.md
+      - Image Generation Pipeline: 04-ai/image_generation_pipeline.md
+      - Video Scripting & Voiceover: 04-ai/video_scripting_and_voiceover.md
+      - Semantic Search & Vector DB: 04-ai/semantic_search_vector_db.md
+      - AI Moderation & Safety: 04-ai/ai_moderation_safety.md
+      - AI Memory Architecture: 04-ai/ai_memory_architecture.md
+      - Translation Engine AI: 04-ai/translation_engine_ai.md
+      - Fallback Policies: 04-ai/fallback_policies.md
+      - Quality Evaluation Framework: 04-ai/quality_evaluation_framework.md
+  - 05 News Intelligence:
+      - Directory Overview: 05-news-intelligence/index.md
+      - RSS Monitoring Engine: 05-news-intelligence/rss_monitoring_engine.md
+      - Web Crawler Engine: 05-news-intelligence/web_crawler_engine.md
+      - API Connector Engine: 05-news-intelligence/api_connector_engine.md
+      - Duplicate Detection: 05-news-intelligence/duplicate_detection.md
+      - Topic Clustering: 05-news-intelligence/topic_clustering.md
+      - Entity Extraction: 05-news-intelligence/entity_extraction.md
+      - Knowledge Graph: 05-news-intelligence/knowledge_graph.md
+      - Trend Detection: 05-news-intelligence/trend_detection.md
+      - Source Verification: 05-news-intelligence/source_verification.md
+      - Fact Consistency: 05-news-intelligence/fact_consistency.md
+      - Misinformation Detection: 05-news-intelligence/misinformation_detection.md
+      - Breaking News Prioritizer: 05-news-intelligence/breaking_news_prioritizer.md
+      - Provenance & Attribution: 05-news-intelligence/provenance_and_attribution.md
+  - 06 Editorial Studio:
+      - Directory Overview: 06-editorial/index.md
+      - Collaborative Editor: 06-editorial/collaborative_editor.md
+      - Version Control: 06-editorial/version_control.md
+      - Media Library: 06-editorial/media_library.md
+      - SEO Optimization: 06-editorial/seo_optimization.md
+      - Approval Workflows: 06-editorial/approval_workflows.md
+      - Automated Proofreading: 06-editorial/automated_proofreading.md
+      - Article Templates: 06-editorial/article_templates.md
+      - Plagiarism Checker: 06-editorial/plagiarism_checker.md
+      - Source Attribution UI: 06-editorial/source_attribution_ui.md
+      - Smart Summarization: 06-editorial/smart_summarization.md
+      - Editorial Dashboard: 06-editorial/editorial_dashboard.md
+      - Newsletter Builder: 06-editorial/newsletter_builder.md
+      - Translation Studio: 06-editorial/translation_studio.md
+  - 07 Social Publishing:
+      - Directory Overview: 07-social/index.md
+      - Social Scheduler: 07-social/social_scheduler.md
+      - Facebook Publisher: 07-social/facebook_publisher.md
+      - Instagram Publisher: 07-social/instagram_publisher.md
+      - Threads Publisher: 07-social/threads_publisher.md
+      - LinkedIn Publisher: 07-social/linkedin_publisher.md
+      - YouTube Publisher: 07-social/youtube_publisher.md
+      - Telegram Publisher: 07-social/telegram_publisher.md
+      - WhatsApp Channels: 07-social/whatsapp_channels.md
+      - Newsletter Sender: 07-social/newsletter_sender.md
+      - Social Analytics Telemetry: 07-social/social_analytics_telemetry.md
+      - Media Format Adapter: 07-social/media_format_adapter.md
+      - Approval Routing: 07-social/approval_routing.md
+  - 08 SaaS Engine:
+      - Directory Overview: 08-saas/index.md
+      - Tenant Provisioning: 08-saas/tenant_provisioning.md
+      - Subscription Billing: 08-saas/subscription_billing.md
+      - Credit Consumption: 08-saas/credit_consumption.md
+      - Plugin Architecture: 08-saas/plugin_architecture.md
+      - Plugin SDK: 08-saas/plugin_sdk.md
+      - Marketplace: 08-saas/marketplace.md
+      - Theme Engine: 08-saas/theme_engine.md
+      - White Labeling: 08-saas/white_labeling.md
+      - Organization Management: 08-saas/organization_management.md
+      - Usage Metering: 08-saas/usage_metering.md
+      - Customer Support Integration: 08-saas/customer_support_integration.md
+      - Tenant Lifecycle: 08-saas/tenant_lifecycle.md
+  - 09 API Specifications:
+      - Directory Overview: 09-api/index.md
+      - REST API Spec: 09-api/rest_api_spec.md
+      - GraphQL API Spec: 09-api/graphql_api_spec.md
+      - Webhooks Architecture: 09-api/webhooks_architecture.md
+      - SDK Javascript: 09-api/sdk_javascript.md
+      - SDK Python: 09-api/sdk_python.md
+      - CLI Specification: 09-api/cli_specification.md
+      - OpenAPI Manifest: 09-api/openapi_manifest.md
+      - Authentication API: 09-api/authentication_api.md
+      - Rate Limiting API: 09-api/rate_limiting_api.md
+      - Error Handling API: 09-api/error_handling_api.md
+      - Developer Portal: 09-api/developer_portal.md
+      - Versioning & Deprecation: 09-api/versioning_and_deprecation.md
+  - 10 Security:
+      - Directory Overview: 10-security/index.md
+      - Authentication Protocols: 10-security/authentication_protocols.md
+      - RBAC & ABAC Models: 10-security/rbac_abac_models.md
+      - API Key Management: 10-security/api_key_management.md
+      - Encryption Policies: 10-security/encryption_policies.md
+      - Secrets Management: 10-security/secrets_management.md
+      - Rate Limiting Security: 10-security/rate_limiting_security.md
+      - Audit Log Policy: 10-security/audit_log_policy.md
+      - GDPR & CCPA Compliance: 10-security/gdpr_ccpa_compliance.md
+      - OWASP Mitigation: 10-security/owasp_mitigation.md
+      - Incident Response Plan: 10-security/incident_response_plan.md
+      - Network Security: 10-security/network_security.md
+      - Threat Modeling: 10-security/threat_modeling.md
+  - 11 DevOps & Infrastructure:
+      - Directory Overview: 11-devops/index.md
+      - Docker Environments: 11-devops/docker_environments.md
+      - CI/CD Pipelines: 11-devops/ci_cd_pipelines.md
+      - Kubernetes Deployment: 11-devops/kubernetes_deployment.md
+      - Monitoring Prometheus: 11-devops/monitoring_prometheus.md
+      - Grafana Dashboards: 11-devops/grafana_dashboards.md
+      - Logging Centralized: 11-devops/logging_centralized.md
+      - Distributed Tracing: 11-devops/distributed_tracing.md
+      - Scaling Rules: 11-devops/scaling_rules.md
+      - Cloudflare Configurations: 11-devops/cloudflare_configurations.md
+      - Backup Scripts: 11-devops/backup_scripts.md
+      - Environment Variables: 11-devops/environment_variables.md
+      - Git Workflow: 11-devops/git_workflow.md
+      - Infrastructure as Code: 11-devops/infrastructure_as_code.md
+  - 12 UI/UX Specifications:
+      - Directory Overview: 12-ui/index.md
+      - Design Tokens: 12-ui/design_tokens.md
+      - Component Library: 12-ui/component_library.md
+      - Layout Specifications: 12-ui/layout_specifications.md
+      - Editorial Studio UI: 12-ui/editorial_studio_ui.md
+      - Social Preview UI: 12-ui/social_preview_ui.md
+      - Billing UI: 12-ui/billing_ui.md
+      - Marketplace UI: 12-ui/marketplace_ui.md
+      - Source Manager UI: 12-ui/source_manager_ui.md
+      - Dark Mode Theme: 12-ui/dark_mode_theme.md
+      - Accessibility Standards UI: 12-ui/accessibility_standards_ui.md
+      - Micro Animations: 12-ui/micro_animations.md
+      - Site Publisher Templates: 12-ui/site_publisher_templates.md
+  - 13 Testing Strategy:
+      - Directory Overview: 13-testing/index.md
+      - Unit Testing Standards: 13-testing/unit_testing_standards.md
+      - Integration Testing: 13-testing/integration_testing.md
+      - API Contract Tests: 13-testing/api_contract_tests.md
+      - Load & Performance: 13-testing/load_and_performance.md
+      - Security Scans: 13-testing/security_scans.md
+      - Accessibility Scans: 13-testing/accessibility_scans.md
+      - E2E Playwright Specs: 13-testing/e2e_playwright_specs.md
+      - Chaos Engineering: 13-testing/chaos_engineering.md
+      - CI Test Integration: 13-testing/ci_test_integration.md
+      - Mocking Third Party: 13-testing/mocking_third_party.md
+      - QA Release Checklist: 13-testing/qa_release_checklist.md
+  - 14 Product Roadmap:
+      - Directory Overview: 14-roadmap/index.md
+      - Q1 & Q2 Deliverables: 14-roadmap/q1_q2_deliverables.md
+      - Q3 & Q4 Deliverables: 14-roadmap/q3_q4_deliverables.md
+      - Long Term Vision: 14-roadmap/long_term_vision.md
+      - Future Tech Evaluation: 14-roadmap/future_tech_evaluation.md
