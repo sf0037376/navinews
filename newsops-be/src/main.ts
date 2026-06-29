@@ -6,6 +6,12 @@ import * as fs from 'fs';
 import * as crypto from 'crypto';
 import { PrismaService } from './modules/prisma/prisma.service';
 
+// Must match auth.controller.ts hashPassword function exactly
+function hashPassword(password: string): string {
+  const salt = 'newsops_salt_2026';
+  return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
@@ -64,8 +70,7 @@ async function bootstrap() {
     let adminUser = await prisma.user.findFirst({ where: { email: adminEmail, deletedAt: null } });
     if (!adminUser) {
       const password = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
-      // Use SHA-256 as a simple password hash (no bcryptjs dependency needed)
-      const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+      const passwordHash = hashPassword(password);
       adminUser = await prisma.user.create({
         data: {
           email: adminEmail,
