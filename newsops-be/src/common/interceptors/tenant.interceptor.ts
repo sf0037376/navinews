@@ -44,7 +44,7 @@ export class TenantInterceptor implements NestInterceptor {
     const url = request.url;
     const isGlobalRoute = url.startsWith('/api/v1/admin/tenants') || url.startsWith('/auth/login') || url.startsWith('/auth/register');
 
-    if (!tenant && !isGlobalRoute && (tenantId || subdomain)) {
+    if (!tenant && !isGlobalRoute && tenantId) {
       throw new NotFoundException('The requested workspace does not exist or has been suspended.');
     }
 
